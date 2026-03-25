@@ -15,12 +15,11 @@ public class Notification {
     private String title;
     private String message;
     private LocalDateTime deadline;
+
     private String recipients;
 
     @ElementCollection
     private List<Long> completedUsers = new ArrayList<>();
-
-    public Notification() {}
 
     public Long getId() { return id; }
 

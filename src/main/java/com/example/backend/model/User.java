@@ -15,9 +15,6 @@ public class User {
     private String password;
     private String role;
 
-    @Column(nullable = false)
-    private Boolean approved = false; // ✅ IMPORTANT FIX
-
     public User() {}
 
     public Long getId() { return id; }
@@ -33,7 +30,4 @@ public class User {
 
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
-
-    public Boolean getApproved() { return approved; } // ✅ FIX
-    public void setApproved(Boolean approved) { this.approved = approved; }
 }
