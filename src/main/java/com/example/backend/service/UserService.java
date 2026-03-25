@@ -13,53 +13,59 @@ public class UserService {
     @Autowired
     private UserRepository repo;
 
-    // ✅ REGISTER FIX
-  public User register(User user) {
+    // ✅ Register a new user
+    public User register(User user) {
+        // Check if any approved admin already exists
+        boolean approvedAdminExists = repo.findAll().stream()
+                .anyMatch(u -> "ADMIN".equals(u.getRole()) && Boolean.TRUE.equals(u.getApproved()));
 
-    // 🔥 CHECK: is there any APPROVED admin?
-    boolean approvedAdminExists = repo.findAll().stream()
-            .anyMatch(u -> "ADMIN".equals(u.getRole()) && Boolean.TRUE.equals(u.getApproved()));
-
-    if ("ADMIN".equals(user.getRole())) {
-
-        if (!approvedAdminExists) {
-            // ✅ FIRST APPROVED ADMIN
-            user.setApproved(true);
+        if ("ADMIN".equals(user.getRole())) {
+            if (!approvedAdminExists) {
+                // First admin → auto-approved
+                user.setApproved(true);
+            } else {
+                // Later admins → require manual approval
+                user.setApproved(false);
+            }
         } else {
-            user.setApproved(false);
+            // Non-admin users are always approved
+            user.setApproved(true);
         }
 
-    } else {
-        user.setApproved(true);
+        return repo.save(user);
     }
 
-    return repo.save(user);
-}
-
-    // ✅ LOGIN FIX
+    // ✅ Login
     public User login(String email, String password) {
         User user = repo.findByEmail(email);
 
-        if (user == null)
+        if (user == null) {
             throw new RuntimeException("User not found");
+        }
 
-        if (!user.getPassword().equals(password))
+        if (!user.getPassword().equals(password)) {
             throw new RuntimeException("Invalid password");
+        }
 
-        // ⛔ BLOCK UNAPPROVED ADMIN
-        if ("ADMIN".equals(user.getRole()) && !user.getApproved()) {
-            throw new RuntimeException("Admin not approved yet");
+        // Block unapproved admins, except the first one
+        if ("ADMIN".equals(user.getRole())) {
+            boolean approvedAdminExists = repo.findAll().stream()
+                    .anyMatch(u -> "ADMIN".equals(u.getRole()) && Boolean.TRUE.equals(u.getApproved()));
+
+            if (!user.getApproved() && approvedAdminExists) {
+                throw new RuntimeException("Admin not approved yet");
+            }
         }
 
         return user;
     }
 
-    // ✅ GET USERS
+    // ✅ Get all users
     public List<User> getAllUsers() {
         return repo.findAll();
     }
 
-    // ✅ APPROVE ADMIN
+    // ✅ Approve an admin manually
     public User approveAdmin(Long id) {
         User user = repo.findById(id).orElseThrow();
         user.setApproved(true);
