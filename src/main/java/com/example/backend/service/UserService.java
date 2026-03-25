@@ -18,11 +18,13 @@ public class UserService {
     public User login(String email, String password) {
         User user = repo.findByEmail(email);
 
-        if (user == null)
+        if (user == null) {
             throw new RuntimeException("User not found");
+        }
 
-        if (!user.getPassword().equals(password))
+        if (!user.getPassword().equals(password)) {
             throw new RuntimeException("Invalid password");
+        }
 
         return user;
     }

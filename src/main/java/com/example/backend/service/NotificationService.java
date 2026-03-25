@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class NotificationService {
@@ -22,18 +23,24 @@ public class NotificationService {
     }
 
     public boolean delete(Long id) {
-        repo.deleteById(id);
-        return true;
+        Optional<Notification> n = repo.findById(id);
+        if (n.isPresent()) {
+            repo.delete(n.get());
+            return true;
+        }
+        return false;
     }
 
-    // ✅ MARK COMPLETE
-    public Notification markComplete(Long notificationId, Long userId) {
-        Notification n = repo.findById(notificationId).orElseThrow();
+    // ✅ MARK AS DONE
+    public boolean markAsDone(Long id) {
+        Optional<Notification> optional = repo.findById(id);
 
-        if (!n.getCompletedUsers().contains(userId)) {
-            n.getCompletedUsers().add(userId);
+        if (optional.isPresent()) {
+            Notification n = optional.get();
+            n.setCompleted(true);
+            repo.save(n);
+            return true;
         }
-
-        return repo.save(n);
+        return false;
     }
 }
