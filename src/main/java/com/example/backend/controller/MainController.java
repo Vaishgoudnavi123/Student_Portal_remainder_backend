@@ -14,7 +14,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*")
 public class MainController {
 
     @Autowired
@@ -23,11 +23,17 @@ public class MainController {
     @Autowired
     private NotificationService notificationService;
 
-    // REGISTER
-    @PostMapping("/register")
-    public User register(@RequestBody User user) {
-        return userService.register(user);
+  @PostMapping("/register")
+public ResponseEntity<?> register(@RequestBody User user) {
+    try {
+        System.out.println("Registering: " + user.getEmail());
+        return ResponseEntity.ok(userService.register(user));
+    } catch (Exception e) {
+        e.printStackTrace();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(e.getMessage());
     }
+}
 
     // LOGIN
     @PostMapping("/login")
