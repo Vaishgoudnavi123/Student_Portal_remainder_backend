@@ -15,6 +15,10 @@ public class User {
     private String password;
     private String role;
 
+    // ✅ ADD THIS FIELD (Fix for your error)
+    @Column(nullable = false)
+    private boolean approved = true; // or false if you want admin approval system
+
     public User() {}
 
     public Long getId() {
@@ -51,5 +55,14 @@ public class User {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    // ✅ Getter & Setter for approved
+    public boolean isApproved() {
+        return approved;
+    }
+
+    public void setApproved(boolean approved) {
+        this.approved = approved;
     }
 }
