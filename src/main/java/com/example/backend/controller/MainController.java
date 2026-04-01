@@ -6,6 +6,7 @@ import com.example.backend.service.UserService;
 import com.example.backend.service.NotificationService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,37 +40,44 @@ public class MainController {
         }
     }
 
-    // ADD NOTIFICATION
+    // ADD NOTIFICATION (Protected)
     @PostMapping("/notifications")
-    public Notification add(@RequestBody Notification n) {
-        return notificationService.add(n);
+    public ResponseEntity<?> add(@RequestBody Notification n, @RequestParam String role) {
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied: Admins only.");
+        }
+        return ResponseEntity.ok(notificationService.add(n));
     }
 
-    // GET ALL
+    // GET ALL (Public for all logged-in users)
     @GetMapping("/notifications")
     public List<Notification> getAll() {
         return notificationService.getAll();
     }
 
-    // DELETE
+    // DELETE (Protected)
     @DeleteMapping("/notifications/{id}")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Long id, @RequestParam String role) {
+        if (!"ADMIN".equals(role)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied: Admins only.");
+        }
+        
         boolean deleted = notificationService.delete(id);
         if (deleted) {
-            return ResponseEntity.ok("Deleted");
+            return ResponseEntity.ok("Deleted successfully");
         } else {
-            return ResponseEntity.status(404).body("Not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Notification not found");
         }
     }
 
-    // ✅ MARK AS DONE
+    // MARK AS DONE (Available to all users)
     @PutMapping("/notifications/{id}/complete")
     public ResponseEntity<?> markAsDone(@PathVariable Long id) {
         boolean updated = notificationService.markAsDone(id);
         if (updated) {
             return ResponseEntity.ok("Marked as done");
         } else {
-            return ResponseEntity.status(404).body("Notification not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Notification not found");
         }
     }
 }
